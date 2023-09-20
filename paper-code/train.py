@@ -41,6 +41,7 @@ config = dict(
     optimizer_decay_with_factor=10.0,
     optimizer_learning_rate=0.1,  # Tuned for batch size 128 (single worker)
     optimizer_memory=True,
+    optimizer_memory_scale=1.0,
     optimizer_momentum_type="nesterov",
     optimizer_momentum=0.9,
     optimizer_reducer="ExactReducer",
@@ -177,7 +178,7 @@ def main():
                 with timer("batch.accumulate", epoch_frac, verbosity=2):
                     for grad, memory, send_bfr in zip(grads, memories, send_buffers):
                         if config["optimizer_memory"]:
-                            send_bfr.data[:] = grad + memory
+                            send_bfr.data[:] = grad +  torch.mul(memory, config["optimizer_memory_scale"])
                         else:
                             send_bfr.data[:] = grad
 
